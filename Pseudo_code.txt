@@ -14,14 +14,14 @@ If command == 0
 
 //Data write to L1
 If command == 1
-        If line tag does NOT match AND line state is NOT Invalid
+        If line tag does NOT match AND line state is Modified
                 evict current line and write to L2
                 read line we are wanting to write from L2
                 write new data to L1
                 mark line as Exclusive
                 log a miss
                 
-        else if line tag does NOT match AND line state is Invalid
+        else if line tag does NOT match AND line state is NOT Modified
                 evict current line
                 read line we are wanting to write from L2
                 write new data to L1
