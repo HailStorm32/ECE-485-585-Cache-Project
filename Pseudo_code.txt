@@ -1,0 +1,83 @@
+﻿Read command from file
+
+
+//Data read from L1
+If command == 0
+        If line is invalid OR line tag does NOT match:
+                log a miss
+                retrieve data from L2
+                mark line as Exclusive
+                
+        Else if line state is Exclusive OR Modified OR Shared:
+                log a hit
+
+
+//Data write to L1
+If command == 1
+        If line tag does NOT match AND line state is NOT Invalid
+                evict current line and write to L2
+                read line we are wanting to write from L2
+                write new data to L1
+                mark line as Exclusive
+                log a miss
+                
+        else if line tag does NOT match AND line state is Invalid
+                evict current line
+                read line we are wanting to write from L2
+                write new data to L1
+                mark line as Exclusive
+                log a miss
+                
+        else if line tag does match
+                if line state is Exclusive OR Shared
+                        write new data
+                        mark line as Modified
+                        log a hit 
+                
+                else if line state is Modified
+                        write new data
+                        log a hit 
+                        
+                else if line state is Invalid
+                        read line we are wanting to write from L2
+                        write new data
+                        mark line as Modified
+                        log a miss
+
+
+//Instruction fetch from L1
+If command == 2
+                if line state is Invalid
+                        log a miss
+                        retrieve instruction from L2
+                
+                else if line state is NOT Invalid
+                        log a hit
+
+
+//Invalidate line                 
+If command == 3
+        if cache contains tag
+                mark line as Invalid
+        
+        else
+                do nothing
+                
+//Notice a request for data on the bus
+If command == 4
+        if cache contains tag AND its state is Modified
+                write data to L2 and signal that its been written
+                mark line as Shared
+        
+        else
+                do nothing
+
+
+//Clear the cache
+If command == 8
+        clear the cache
+        clear all stats
+        mark all lines as Invalid
+        
+If command == 9
+        print cache contents and state
