@@ -1,23 +1,34 @@
 #include "cache.h"
-#include <malloc.h>
 #include <iostream>
 
-Cache::Cache()
+Cache::Cache(uint8_t numOfWays, uint16_t numOfSets, uint8_t lineSize)
 {
+	this->numOfWays = numOfWays;
+	this->numOfSets = numOfSets;
+	this->lineSize = lineSize;
+
+	//Create array to hold cache
+	cacheSets = new cacheLinePtr_t* [numOfSets];
+	for (int index = 0; index < numOfSets; index++) 
+	{
+		cacheSets[index] = new cacheLinePtr_t[numOfWays];
+	}
+
 	Cache::initialize();
 }
 
 Cache::~Cache()
 {
-	for (int setIndex = 0; setIndex < NUM_OF_SETS; setIndex++)
+	for (int setIndex = 0; setIndex < numOfSets; setIndex++)
 	{
-		for (int lineIndex = 0; lineIndex < NUM_OF_WAYS; lineIndex++)
+		for (int lineIndex = 0; lineIndex < numOfWays; lineIndex++)
 		{
 			if (cacheSets[setIndex][lineIndex] != NULL)
 			{
-				free(cacheSets[setIndex][lineIndex]);
-			}		
+				delete cacheSets[setIndex][lineIndex];
+			}	
 		}
+		delete cacheSets[setIndex];
 	}
 }
 
@@ -37,7 +48,7 @@ Cache::~Cache()
 cacheLinePtr_t Cache::returnLine(uint16_t tag, uint16_t setID)
 {
 	//Cycle through the lines in the set
-	for (int lineIndex = 0; lineIndex < NUM_OF_WAYS; lineIndex++) 
+	for (int lineIndex = 0; lineIndex < numOfWays; lineIndex++) 
 	{
 		//Find a matching tag
 		if (cacheSets[setID][lineIndex]->tag == tag)
@@ -80,7 +91,7 @@ bool Cache::updateLRU(cacheLinePtr_t lineAccessed)
 {
 	if (lineAccessed != NULL)
 	{
-		for (int lineIndex = 0; lineIndex < NUM_OF_WAYS; lineIndex++)
+		for (int lineIndex = 0; lineIndex < numOfWays; lineIndex++)
 		{
 			if (cacheSets[lineAccessed->set][lineIndex]->LRU < lineAccessed->LRU)
 			{
@@ -111,12 +122,12 @@ bool Cache::updateLRU(cacheLinePtr_t lineAccessed)
 void Cache::initialize()
 {
 	//Cycle through all the sets
-	for (int setIndex = 0; setIndex < NUM_OF_SETS; setIndex++)
+	for (int setIndex = 0; setIndex < numOfSets; setIndex++)
 	{
 		//Cycle through lines in set
-		for (int lineIndex = 0; lineIndex < NUM_OF_WAYS; lineIndex++)
+		for (int lineIndex = 0; lineIndex < numOfWays; lineIndex++)
 		{
-			cacheLinePtr_t linePtr = (cacheLinePtr_t)malloc(sizeof(cacheLine_t));
+			cacheLinePtr_t linePtr = new cacheLine_t; //(cacheLinePtr_t)malloc(sizeof(cacheLine_t));
 
 			if (linePtr == NULL)
 			{

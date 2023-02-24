@@ -2,10 +2,6 @@
 
 #include <cstdint>
 
-#define NUM_OF_WAYS		4
-#define NUM_OF_SETS		16000
-#define LINE_SIZE		64 //In Bytes
-
 #define LRU_INIT_STATE	0b00
 
 typedef struct cacheLine
@@ -14,7 +10,7 @@ typedef struct cacheLine
 	uint8_t LRU;
 	uint16_t tag;
 	uint16_t set;
-} cacheLine_t, * cacheLinePtr_t;
+} cacheLine_t, *cacheLinePtr_t;
 
 enum MESI { MODIFIED, EXCLUSIVE, SHARED, INVALID };
 
@@ -22,7 +18,7 @@ enum MESI { MODIFIED, EXCLUSIVE, SHARED, INVALID };
 class Cache
 {
 public:
-	Cache();
+	Cache(uint8_t numOfWays, uint16_t numOfSets, uint8_t lineSize);
 
 	~Cache();
 
@@ -36,6 +32,10 @@ private:
 
 	void initialize();
 
-	cacheLinePtr_t cacheSets[NUM_OF_SETS][NUM_OF_WAYS];
+	cacheLinePtr_t **cacheSets;
+
+	uint8_t numOfWays;
+	uint16_t numOfSets;
+	uint8_t lineSize; //In Bytes
 };
 
