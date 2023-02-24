@@ -4,15 +4,16 @@
 
 #define LRU_INIT_STATE	0b00
 
+
+enum MESIbits { MODIFIED, EXCLUSIVE, SHARED, INVALID , ERROR};
+
 typedef struct cacheLine
 {
-	uint8_t MESI;
+	MESIbits MESI;
 	uint8_t LRU;
 	uint16_t tag;
 	uint16_t set;
 } cacheLine_t, *cacheLinePtr_t;
-
-enum MESI { MODIFIED, EXCLUSIVE, SHARED, INVALID };
 
 
 class Cache
@@ -24,9 +25,13 @@ public:
 
 	cacheLinePtr_t returnLine(uint16_t tag, uint16_t setID);
 
-	uint8_t returnMESI(uint16_t tag, uint16_t setID);
+	MESIbits returnMESI(uint16_t tag, uint16_t setID);
 
 	bool updateLRU(cacheLinePtr_t lineAccessed);
+
+	cacheLinePtr_t getNextAvailLine(uint16_t setID);
+
+	void testPrintSet(uint16_t setID);
 
 private:
 
@@ -37,5 +42,6 @@ private:
 	uint8_t numOfWays;
 	uint16_t numOfSets;
 	uint8_t lineSize; //In Bytes
+	uint8_t lruMaxState;
 };
 

@@ -12,18 +12,24 @@ int main()
 	cacheLinePtr_t line = S1.returnLine(0, 0);
 
 	line->tag = 323;
+	line->MESI = MODIFIED;
+	S1.updateLRU(line);
 
 	line = S1.returnLine(0, 1);
 
 	line->tag = 500;
+	S1.updateLRU(line);
 
-	line = S1.returnLine(323, 0);
+	S1.testPrintSet(0);
+	S1.testPrintSet(1);
 
-	std::cout << "TEST: " << (int)line->MESI << " | " << (int)line->tag << std::endl;
+	line = S1.getNextAvailLine(0);
 
-	line = S1.returnLine(500, 1);
+	line->tag = 400;
+	S1.updateLRU(line);
 
-	std::cout << "TEST: " << (int)line->MESI << " | " << (int)line->tag << std::endl;
+	S1.testPrintSet(0);
+	S1.testPrintSet(1);
 
 	std::cout << "HELLO" << std::endl;
 

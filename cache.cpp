@@ -14,6 +14,9 @@ Cache::Cache(uint8_t numOfWays, uint16_t numOfSets, uint8_t lineSize)
 		cacheSets[index] = new cacheLinePtr_t[numOfWays];
 	}
 
+	//Set the max state for LRU
+	lruMaxState = numOfWays - 1;
+
 	Cache::initialize();
 }
 
@@ -61,8 +64,18 @@ cacheLinePtr_t Cache::returnLine(uint16_t tag, uint16_t setID)
 	return NULL;
 }
 
-
-uint8_t Cache::returnMESI(uint16_t tag, uint16_t setID)
+/*
+* Description:
+*	Returns the MESI bits for a given line in a set
+* 
+* Arguments:
+*	(INPUT) tag -- 16bit tag for the line you want to find
+*	(INPUT) setID -- 14bit value representing the set the line is in
+* 
+* Return:
+*	MESIbits -- enum of MESI state
+*/
+MESIbits Cache::returnMESI(uint16_t tag, uint16_t setID)
 {
 	cacheLinePtr_t line = Cache::returnLine(tag, setID);
 
@@ -72,7 +85,7 @@ uint8_t Cache::returnMESI(uint16_t tag, uint16_t setID)
 	}
 	else
 	{
-		return 255;
+		return ERROR;
 	}
 }
 
@@ -93,7 +106,7 @@ bool Cache::updateLRU(cacheLinePtr_t lineAccessed)
 	{
 		for (int lineIndex = 0; lineIndex < numOfWays; lineIndex++)
 		{
-			if (cacheSets[lineAccessed->set][lineIndex]->LRU < lineAccessed->LRU)
+			if (cacheSets[lineAccessed->set][lineIndex]->LRU <= lineAccessed->LRU && cacheSets[lineAccessed->set][lineIndex]->LRU != lruMaxState)
 			{
 				cacheSets[lineAccessed->set][lineIndex]->LRU++;
 			}
@@ -107,6 +120,54 @@ bool Cache::updateLRU(cacheLinePtr_t lineAccessed)
 	{
 		return false;
 	}
+}
+
+/*
+* Description:
+*	Retrieve the next line in a set. Looks for the first unoccupied/invalid line. 
+*	If it cant find that, it will return the LRU line
+* 
+* Arguments:
+*	(INPUT) setID -- set index you want to look in
+* 
+* Returns:
+*	cacheLinePtr_t -- pointer to line struct
+*/
+cacheLinePtr_t Cache::getNextAvailLine(uint16_t setID)
+{
+	int highestLRUIndex = INT16_MIN;
+	int highestLRUval = INT16_MIN;
+
+	//Look for the first invalid line
+	for (int lineIndex = 0; lineIndex < numOfWays; lineIndex++)
+	{
+		if (cacheSets[setID][lineIndex]->MESI == INVALID)
+		{
+			return cacheSets[setID][lineIndex];
+		}
+	}
+
+	//If we get this far, all lines are occupied and valid
+	//Next, find the LRU line
+	for (int lineIndex = 0; lineIndex < numOfWays; lineIndex++)
+	{
+		if (cacheSets[setID][lineIndex]->LRU > highestLRUval)
+		{
+			highestLRUval = cacheSets[setID][lineIndex]->LRU;
+			highestLRUIndex = lineIndex;
+		}
+	}
+
+	return cacheSets[setID][highestLRUIndex];
+}
+
+void Cache::testPrintSet(uint16_t setID)
+{
+	for (int lineIndex = 0; lineIndex < numOfWays; lineIndex++)
+	{
+		std::cout << lineIndex << ": MESI: " << cacheSets[setID][lineIndex]->MESI << " | LRU: " << (int)cacheSets[setID][lineIndex]->LRU << " | TAG: " << cacheSets[setID][lineIndex]->tag << std::endl;
+	}
+	std::cout << std::endl;
 }
 
 /*
