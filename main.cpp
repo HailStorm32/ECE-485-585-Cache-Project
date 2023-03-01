@@ -12,7 +12,9 @@
 #define DATA_L1_SETS		16000
 #define DATA_L1_LINE_SIZE	64
 
+//Function definintons
 void addrParser(uint32_t address, uint16_t* tag, uint16_t* setID);
+void command0(Cache* cachePtr, uint16_t tag, uint16_t setID);
 
 int main()
 {	
@@ -83,4 +85,16 @@ void addrParser(uint32_t address, uint16_t *tag, uint16_t *setID)
 	*tag = (address & 0xFFF00000) >> 20;
 
 	std::cout << "Set: " << *setID << " | " << "Tag: " << *tag << std::endl;
+}
+
+void command0(Cache *cachePtr, uint16_t tag, uint16_t setID)
+{
+	//Get the line
+	cacheLinePtr_t cacheLine = cachePtr->returnLine(tag, setID);
+	
+	//If the line isnt in the 
+	if (cacheLine == NULL)
+	{
+
+	}
 }
