@@ -32,11 +32,13 @@ int main(int argc, char *argv[])
 	uint16_t setID = 0;
 
 	int mode = 0;
-	mode = atoi(argv[1]);
-	std::cout << "Running in Mode: " << mode << std::endl;
-
 	std::string filename = "test.txt";
-	filename = argv[2];
+	if(argc > 1){
+		mode = atoi(argv[1]);
+		std::cout << "Running in Mode: " << mode << std::endl;
+		
+		filename = argv[2];
+	}	
 	std::ifstream infile(filename);
 
 	int command = 0, address_hex = 0x0;
