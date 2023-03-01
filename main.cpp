@@ -12,9 +12,17 @@
 #define DATA_L1_SETS		16000
 #define DATA_L1_LINE_SIZE	64
 
+struct cacheStats 
+{
+	uint16_t hits;
+	uint16_t misses;
+	uint16_t writes;
+	uint16_t reads;
+} dataL1Stats, instL1Stats;
+
 //Function definintons
 void addrParser(uint32_t address, uint16_t* tag, uint16_t* setID);
-void command0(Cache* cachePtr, uint16_t tag, uint16_t setID);
+void command0(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
 
 int main()
 {	
@@ -23,8 +31,6 @@ int main()
 
 	uint16_t tag = 0;
 	uint16_t setID = 0;
-
-	
 
 	std::ifstream infile("test.txt");
 
@@ -40,6 +46,9 @@ int main()
 		{
 		case 0:
 			std::cout << command << " " << address_hex << std::endl;
+
+			//Read from Data L1 cache
+			command0(address_hex, &dataL1, tag, setID);
 			break;
 		case 1:
 			std::cout << command << " " << address_hex << std::endl;
@@ -87,14 +96,63 @@ void addrParser(uint32_t address, uint16_t *tag, uint16_t *setID)
 	std::cout << "Set: " << *setID << " | " << "Tag: " << *tag << std::endl;
 }
 
-void command0(Cache *cachePtr, uint16_t tag, uint16_t setID)
+void command0(uint32_t address, Cache *cachePtr, uint16_t tag, uint16_t setID)
 {
+	bool isOccupiedAndValid = false;
+	uint32_t evictedAddr = 0;
+
 	//Get the line
 	cacheLinePtr_t cacheLine = cachePtr->returnLine(tag, setID);
 	
-	//If the line isnt in the 
+	//If the line isnt in the cache
 	if (cacheLine == NULL)
 	{
+		//Log a miss
+		dataL1Stats.misses += 1;
 
+		//Find the next availble line
+		cacheLine = cachePtr->getNextAvailLine(setID, &isOccupiedAndValid);
+
+		//If the line we got was occupied with valid data, deal with it accordingly
+		if (isOccupiedAndValid)
+		{
+			//TODO: recreate the evicted address
+
+			//Write evicted line back to L2
+			std::cout << "\nWrite to L2 <" << std::hex << evictedAddr << std::dec << ">" << std::endl;
+
+			//Retrieve our data form L2
+			std::cout << "\nRead from L2 <" << std::hex << address << std::dec << ">" << std::endl;
+		}
+
+		//Write the new tag to L1
+		cacheLine->tag = tag;
+
+		//Mark line as exclusive
+		cacheLine->MESI = EXCLUSIVE;
 	}
+	//Line exists but is invalid
+	else if (cacheLine->MESI == INVALID)
+	{
+		//Log a miss
+		dataL1Stats.misses += 1;
+
+		//Retrieve from L2
+		std::cout << "\nRead from L2 <" << std::hex << address << std::dec << ">" << std::endl;
+
+		//Mark line as exclusive
+		cacheLine->MESI = EXCLUSIVE;
+	}
+	//Line existed in cache and line state is Exclusive OR Modified OR Shared
+	else
+	{
+		//Log a hit
+		dataL1Stats.hits += 1;
+	}
+
+	//Update LRU bits
+	cachePtr->updateLRU(cacheLine);
+
+	//Log a read
+	dataL1Stats.reads += 1;
 }
