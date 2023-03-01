@@ -129,11 +129,12 @@ bool Cache::updateLRU(cacheLinePtr_t lineAccessed)
 * 
 * Arguments:
 *	(INPUT) setID -- set index you want to look in
+*	(OUTPUT) isOccupied -- indicates if the line found was occupied by valid data
 * 
 * Returns:
 *	cacheLinePtr_t -- pointer to line struct
 */
-cacheLinePtr_t Cache::getNextAvailLine(uint16_t setID)
+cacheLinePtr_t Cache::getNextAvailLine(uint16_t setID, bool *isOccupied)
 {
 	int highestLRUIndex = INT16_MIN;
 	int highestLRUval = INT16_MIN;
@@ -143,6 +144,7 @@ cacheLinePtr_t Cache::getNextAvailLine(uint16_t setID)
 	{
 		if (cacheSets[setID][lineIndex]->MESI == INVALID)
 		{
+			*isOccupied = false;
 			return cacheSets[setID][lineIndex];
 		}
 	}
@@ -158,6 +160,7 @@ cacheLinePtr_t Cache::getNextAvailLine(uint16_t setID)
 		}
 	}
 
+	*isOccupied = true;
 	return cacheSets[setID][highestLRUIndex];
 }
 

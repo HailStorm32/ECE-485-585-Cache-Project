@@ -29,7 +29,7 @@ public:
 
 	bool updateLRU(cacheLinePtr_t lineAccessed);
 
-	cacheLinePtr_t getNextAvailLine(uint16_t setID);
+	cacheLinePtr_t getNextAvailLine(uint16_t setID, bool *isOccupied);
 
 	void testPrintSet(uint16_t setID);
 
