@@ -134,7 +134,7 @@ bool Cache::updateLRU(cacheLinePtr_t lineAccessed)
 * Returns:
 *	cacheLinePtr_t -- pointer to line struct
 */
-cacheLinePtr_t Cache::getNextAvailLine(uint16_t setID, bool *isOccupied)
+cacheLinePtr_t Cache::getNextAvailLine(uint16_t setID, bool *isOccupiedAndMod)
 {
 	int highestLRUIndex = INT16_MIN;
 	int highestLRUval = INT16_MIN;
@@ -144,7 +144,7 @@ cacheLinePtr_t Cache::getNextAvailLine(uint16_t setID, bool *isOccupied)
 	{
 		if (cacheSets[setID][lineIndex]->MESI == INVALID)
 		{
-			*isOccupied = false;
+			*isOccupiedAndMod = false;
 			return cacheSets[setID][lineIndex];
 		}
 	}
@@ -159,8 +159,13 @@ cacheLinePtr_t Cache::getNextAvailLine(uint16_t setID, bool *isOccupied)
 			highestLRUIndex = lineIndex;
 		}
 	}
+	
+	//Log if the line has been modified
+	if (cacheSets[setID][highestLRUIndex]->MESI == MODIFIED)
+	{
+		*isOccupiedAndMod = true;
+	}
 
-	*isOccupied = true;
 	return cacheSets[setID][highestLRUIndex];
 }
 
