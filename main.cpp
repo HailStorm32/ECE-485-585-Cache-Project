@@ -20,6 +20,7 @@ struct cacheStats
 } dataL1Stats, instL1Stats;
 
 //Function definintons
+uint32_t revAddrParser(uint32_t tag, uint32_t setID);
 void addrParser(uint32_t address, uint16_t* tag, uint16_t* setID);
 void command0(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
 
@@ -52,28 +53,28 @@ int main(int argc, char *argv[])
 		switch (command)
 		{
 		case 0:
-			std::cout << command << " " << address_hex << std::endl;
+			std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
 
 			//Read from Data L1 cache
 			command0(address_hex, &dataL1, tag, setID);
 			break;
 		case 1:
-			std::cout << command << " " << address_hex << std::endl;
+			std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
 			break;
 		case 2:
-			std::cout << command << " " << address_hex << std::endl;
+			std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
 			break;
 		case 3:
-			std::cout << command << " " << address_hex << std::endl;
+			std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
 			break;
 		case 4:
-			std::cout << command << " " << address_hex << std::endl;
+			std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
 			break;
 		case 8:
-			std::cout << command << " " << address_hex << std::endl;
+			std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
 			break;
 		case 9:
-			std::cout << command << " " << address_hex << std::endl;
+			std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
 			break;
 		default:
 			std::cout << "\n\nERROR: Invalid command " << command << "\n\n";
@@ -162,4 +163,15 @@ void command0(uint32_t address, Cache *cachePtr, uint16_t tag, uint16_t setID)
 
 	//Log a read
 	dataL1Stats.reads += 1;
+}
+
+uint32_t revAddrParser(uint32_t tag, uint32_t setID)
+{
+	uint32_t address = 0;
+
+	address = (tag << 20) | (setID << 6) | 0b000000;
+
+	std::cout << "Converted: " << std::hex << address << std::dec << std::endl;
+
+	return address;
 }
