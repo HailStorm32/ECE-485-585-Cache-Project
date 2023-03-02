@@ -124,7 +124,8 @@ void command0(uint32_t address, Cache *cachePtr, uint16_t tag, uint16_t setID)
 		//If the line we got was occupied with valid data, deal with it accordingly
 		if (isOccupiedAndValid)
 		{
-			//TODO: recreate the evicted address
+			//Recreate the evicted address
+			evictedAddr = revAddrParser(tag, setID);
 
 			//Write evicted line back to L2
 			std::cout << "\nWrite to L2 <" << std::hex << evictedAddr << std::dec << ">" << std::endl;
