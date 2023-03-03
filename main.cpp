@@ -23,6 +23,7 @@ struct cacheStats
 uint32_t revAddrParser(uint32_t tag, uint32_t setID);
 void addrParser(uint32_t address, uint16_t* tag, uint16_t* setID);
 void command0(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
+void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
 
 int main(int argc, char *argv[])
 {	
@@ -106,7 +107,7 @@ void addrParser(uint32_t address, uint16_t *tag, uint16_t *setID)
 
 void command0(uint32_t address, Cache *cachePtr, uint16_t tag, uint16_t setID)
 {
-	bool isOccupiedAndValid = false;
+	bool isOccupiedAndModified = false;
 	uint32_t evictedAddr = 0;
 
 	//Get the line
@@ -119,20 +120,20 @@ void command0(uint32_t address, Cache *cachePtr, uint16_t tag, uint16_t setID)
 		dataL1Stats.misses += 1;
 
 		//Find the next availble line
-		cacheLine = cachePtr->getNextAvailLine(setID, &isOccupiedAndValid);
+		cacheLine = cachePtr->getNextAvailLine(setID, &isOccupiedAndModified);
 
 		//If the line we got was occupied with valid data, deal with it accordingly
-		if (isOccupiedAndValid)
+		if (isOccupiedAndModified)
 		{
 			//Recreate the evicted address
 			evictedAddr = revAddrParser(tag, setID);
 
 			//Write evicted line back to L2
-			std::cout << "\nWrite to L2 <" << std::hex << evictedAddr << std::dec << ">" << std::endl;
-
-			//Retrieve our data form L2
-			std::cout << "\nRead from L2 <" << std::hex << address << std::dec << ">" << std::endl;
+			std::cout << "\nWrite to L2 <" << std::hex << evictedAddr << std::dec << ">" << std::endl;		
 		}
+
+		//Retrieve our data form L2
+		std::cout << "\nRead from L2 <" << std::hex << address << std::dec << ">" << std::endl;
 
 		//Write the new tag to L1
 		cacheLine->tag = tag;
@@ -164,6 +165,94 @@ void command0(uint32_t address, Cache *cachePtr, uint16_t tag, uint16_t setID)
 
 	//Log a read
 	dataL1Stats.reads += 1;
+}
+
+void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
+{
+	bool isOccupiedAndModified = false;
+	uint32_t evictedAddr = 0;
+
+	//Get the line
+	cacheLinePtr_t cacheLine = cachePtr->returnLine(tag, setID);
+
+	//If the line isnt in the cache
+	if (cacheLine == NULL)
+	{
+		//Log a miss
+		dataL1Stats.misses += 1;
+
+		//Find the next availble line
+		cacheLine = cachePtr->getNextAvailLine(setID, &isOccupiedAndModified);
+
+		//If the line we got was occupied with valid data, deal with it accordingly
+		if (isOccupiedAndModified)
+		{
+			//Recreate the evicted address
+			evictedAddr = revAddrParser(tag, setID);
+
+			//Write evicted line back to L2
+			std::cout << "\nWrite to L2 <" << std::hex << evictedAddr << std::dec << ">" << std::endl;
+		}
+
+		//Retrieve our data form L2
+		std::cout << "\nRead for Ownership from L2 <" << std::hex << address << std::dec << ">" << std::endl;
+
+		//TODO: Write back to L2 because its the first write??
+
+		//Write the new tag to L1
+		cacheLine->tag = tag;
+
+		//Mark line as exclusive
+		cacheLine->MESI = EXCLUSIVE;
+	}
+	else
+	{
+		switch (cacheLine->MESI)
+		{
+		case EXCLUSIVE || SHARED:
+			//Write the new tag to L1
+			cacheLine->tag = tag;
+
+			//Mark line as exclusive
+			cacheLine->MESI = MODIFIED;
+
+			//Log a hit
+			dataL1Stats.hits += 1;
+
+			break;
+
+		case MODIFIED:
+			//Write the new tag to L1
+			cacheLine->tag = tag;
+
+			//Log a hit
+			dataL1Stats.hits += 1;
+
+			break;
+
+		case INVALID:
+			//Retrieve our data form L2
+			std::cout << "\nRead for Ownership from L2 <" << std::hex << address << std::dec << ">" << std::endl;
+
+			//Write the new tag to L1
+			cacheLine->tag = tag;
+
+			//Mark line as exclusive
+			cacheLine->MESI = MODIFIED;
+
+			//Log a miss
+			dataL1Stats.misses += 1;
+
+			break;
+
+		default:
+			std::cout << "\nERROR: Invalid MESI state given\n" << std::endl;
+			break;
+		}
+	}
+
+	//Log a write
+	dataL1Stats.writes += 1;
 }
 
 uint32_t revAddrParser(uint32_t tag, uint32_t setID)
