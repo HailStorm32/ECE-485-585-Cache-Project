@@ -139,7 +139,17 @@ cacheLinePtr_t Cache::getNextAvailLine(uint16_t setID, bool *isOccupiedAndMod)
 	int highestLRUIndex = INT16_MIN;
 	int highestLRUval = INT16_MIN;
 
-	//Look for the first invalid line
+	//Look for a "cold" line
+	for (int lineIndex = 0; lineIndex < numOfWays; lineIndex++)
+	{
+		if (cacheSets[setID][lineIndex]->isCold == true)
+		{
+			*isOccupiedAndMod = false;
+			return cacheSets[setID][lineIndex];
+		}
+	}
+
+	//Else look for the first invalid line
 	for (int lineIndex = 0; lineIndex < numOfWays; lineIndex++)
 	{
 		if (cacheSets[setID][lineIndex]->MESI == INVALID)
@@ -208,6 +218,7 @@ void Cache::initialize()
 			linePtr->LRU = LRU_INIT_STATE;
 			linePtr->tag = 0;
 			linePtr->set = setIndex;
+			linePtr->isCold = true;
 
 			cacheSets[setIndex][lineIndex] = linePtr;
 		}

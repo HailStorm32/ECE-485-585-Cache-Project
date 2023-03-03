@@ -13,6 +13,7 @@ typedef struct cacheLine
 	uint8_t LRU;
 	uint16_t tag;
 	uint16_t set;
+	bool isCold;
 } cacheLine_t, *cacheLinePtr_t;
 
 
