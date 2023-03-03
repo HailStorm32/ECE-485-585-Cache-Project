@@ -183,7 +183,7 @@ void Cache::testPrintSet(uint16_t setID)
 {
 	for (int lineIndex = 0; lineIndex < numOfWays; lineIndex++)
 	{
-		std::cout << lineIndex << ": MESI: " << cacheSets[setID][lineIndex]->MESI << " | LRU: " << (int)cacheSets[setID][lineIndex]->LRU << " | TAG: " << cacheSets[setID][lineIndex]->tag << std::endl;
+		std::cout << lineIndex << ": MESI: " << cacheSets[setID][lineIndex]->MESI << " | LRU: " << (int)cacheSets[setID][lineIndex]->LRU << " | TAG: " << cacheSets[setID][lineIndex]->tag << " | isCold: " << cacheSets[setID][lineIndex]->isCold << std::endl;
 	}
 	std::cout << std::endl;
 }
