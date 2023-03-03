@@ -61,6 +61,9 @@ int main(int argc, char *argv[])
 			break;
 		case 1:
 			std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
+
+			//Write to Data L1 cache
+			command1(address_hex, &dataL1, tag, setID);
 			break;
 		case 2:
 			std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
@@ -140,6 +143,12 @@ void command0(uint32_t address, Cache *cachePtr, uint16_t tag, uint16_t setID)
 
 		//Mark line as exclusive
 		cacheLine->MESI = EXCLUSIVE;
+
+		//Warm the line if it isnt already
+		if (cacheLine->isCold)
+		{
+			cacheLine->isCold = false;
+		}
 	}
 	//Line exists but is invalid
 	else if (cacheLine->MESI == INVALID)
@@ -197,10 +206,14 @@ void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 		//Retrieve our data form L2
 		std::cout << "\nRead for Ownership from L2 <" << std::hex << address << std::dec << ">" << std::endl;
 
-		//TODO: Write back to L2 because its the first write??
-
 		//Write the new tag to L1
 		cacheLine->tag = tag;
+
+		//Preform write though to L2
+		if (cacheLine->isCold)
+		{
+			std::cout << "\nWrite to L2 <" << std::hex << address << std::dec << ">" << std::endl;
+		}
 
 		//Mark line as exclusive
 		cacheLine->MESI = EXCLUSIVE;
@@ -249,6 +262,12 @@ void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 			std::cout << "\nERROR: Invalid MESI state given\n" << std::endl;
 			break;
 		}
+	}
+
+	//Warm the line if it isnt already
+	if (cacheLine->isCold)
+	{
+		cacheLine->isCold = false;
 	}
 
 	//Log a write
