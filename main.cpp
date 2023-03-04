@@ -75,7 +75,13 @@ int main(int argc, char *argv[])
 			std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
 			break;
 		case 8:
-			std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
+			std::cout << "Reset Cache" << std::endl;
+			if(dataL1.resetCache()){
+				std::cout << "Data Cache Reset Complete" << std::endl;
+			}
+			if(instL1.resetCache()){
+				std::cout << "Instruction Cache Reset Complete" << std::endl;
+			}
 			break;
 		case 9:
 			std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;

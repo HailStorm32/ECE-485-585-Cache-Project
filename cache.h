@@ -34,6 +34,8 @@ public:
 
 	void testPrintSet(uint16_t setID);
 
+	bool resetCache();
+
 private:
 
 	void initialize();

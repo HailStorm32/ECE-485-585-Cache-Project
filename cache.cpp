@@ -190,6 +190,38 @@ void Cache::testPrintSet(uint16_t setID)
 
 /*
 * Description: 
+	Resets the cache to initial values
+* 
+* Arguments:
+*	NONE
+* 
+* Return:
+*	NONE
+*/
+bool Cache::resetCache()
+{
+	//Cycle through all the sets
+	for (int setIndex = 0; setIndex < numOfSets; setIndex++)
+	{
+		//Cycle through lines in set
+		for (int lineIndex = 0; lineIndex < numOfWays; lineIndex++)
+		{
+			cacheLinePtr_t linePtr = new cacheLine_t; //(cacheLinePtr_t)malloc(sizeof(cacheLine_t));
+
+			linePtr->MESI = INVALID;
+			linePtr->LRU = LRU_INIT_STATE;
+			linePtr->tag = 0;
+			linePtr->set = setIndex;
+			linePtr->isCold = true;
+
+			cacheSets[setIndex][lineIndex] = linePtr;
+		}
+	}
+	return true;
+}
+
+/*
+* Description: 
 	Initialize the datatypes that make up the cache to inital values
 * 
 * Arguments:
