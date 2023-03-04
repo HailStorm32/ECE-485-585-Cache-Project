@@ -43,11 +43,13 @@ int main(int argc, char *argv[])
 	}	
 	std::ifstream infile(filename);
 
-	int command = 0, address_hex = 0x0;
+	int command = 0;
+	uint32_t address_hex = 0x0;
+
 	std::string address_str = "";
 
 	while(infile >> command >> address_str){
-		address_hex = std::stoi(address_str, 0, 16);
+		address_hex = std::stol(address_str, 0, 16);
 
 		addrParser(address_hex, &tag, &setID);
 
