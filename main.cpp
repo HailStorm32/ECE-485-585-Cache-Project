@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 	std::string address_str = "";
 
 	while(infile >> command >> address_str){
-		address_hex = std::stol(address_str, 0, 16);
+		address_hex = std::stoll(address_str, nullptr, 16);
 
 		addrParser(address_hex, &tag, &setID);
 
