@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
-
+	
 	//Hold terminal open until user exits
 	std::cout << "Press <Enter> to close..." << std::endl;
 	std::cin.get();
@@ -205,7 +205,7 @@ void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 		if (isOccupiedAndModified)
 		{
 			//Recreate the evicted address
-			evictedAddr = revAddrParser(tag, setID);
+			evictedAddr = revAddrParser(cacheLine->tag, cacheLine->set);
 
 			//Write evicted line back to L2
 			std::cout << "\nWrite to L2 <" << std::hex << evictedAddr << std::dec << ">" << std::endl;
@@ -224,7 +224,7 @@ void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 		}
 
 		//Mark line as exclusive
-		cacheLine->MESI = EXCLUSIVE;
+		cacheLine->MESI = MODIFIED;
 	}
 	else
 	{
@@ -271,6 +271,9 @@ void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 			break;
 		}
 	}
+
+	//Update LRU bits
+	cachePtr->updateLRU(cacheLine);
 
 	//Warm the line if it isnt already
 	if (cacheLine->isCold)
