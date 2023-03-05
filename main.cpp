@@ -19,7 +19,7 @@ struct cacheStats
 	uint16_t reads;
 } dataL1Stats, instL1Stats;
 
-enum modes {NOTHING, COMS, DEBUG};
+enum modes {NOTHING, COMMS, DEBUG};
 int mode = DEBUG;
 
 //Function definintons
@@ -173,14 +173,14 @@ void command0(uint32_t address, Cache *cachePtr, uint16_t tag, uint16_t setID)
 			evictedAddr = revAddrParser(tag, setID);
 
 			//Write evicted line back to L2
-			if (mode >= COMS)
+			if (mode >= COMMS)
 			{
 				std::cout << "\nWrite to L2 <" << std::hex << evictedAddr << std::dec << ">" << std::endl;
 			}
 		}
 
 		//Retrieve our data form L2
-		if (mode >= COMS)
+		if (mode >= COMMS)
 		{
 			std::cout << "\nRead from L2 <" << std::hex << address << std::dec << ">" << std::endl;
 		}
@@ -204,7 +204,7 @@ void command0(uint32_t address, Cache *cachePtr, uint16_t tag, uint16_t setID)
 		dataL1Stats.misses += 1;
 
 		//Retrieve from L2
-		if (mode >= COMS)
+		if (mode >= COMMS)
 		{
 			std::cout << "\nRead from L2 <" << std::hex << address << std::dec << ">" << std::endl;
 		}
@@ -255,14 +255,14 @@ void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 			evictedAddr = revAddrParser(cacheLine->tag, cacheLine->set);
 
 			//Write evicted line back to L2
-			if (mode >= COMS)
+			if (mode >= COMMS)
 			{
 				std::cout << "\nWrite to L2 <" << std::hex << evictedAddr << std::dec << ">" << std::endl;
 			}
 		}
 
 		//Retrieve our data form L2
-		if (mode >= COMS)
+		if (mode >= COMMS)
 		{
 			std::cout << "\nRead for Ownership from L2 <" << std::hex << address << std::dec << ">" << std::endl;
 		}
@@ -273,7 +273,7 @@ void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 		//Preform write though to L2
 		if (cacheLine->isCold)
 		{
-			if (mode >= COMS)
+			if (mode >= COMMS)
 			{
 				std::cout << "\nWrite to L2 <" << std::hex << address << std::dec << ">" << std::endl;
 			}
@@ -309,7 +309,7 @@ void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 
 		case INVALID:
 			//Retrieve our data form L2
-			if (mode >= COMS)
+			if (mode >= COMMS)
 			{
 				std::cout << "\nRead for Ownership from L2 <" << std::hex << address << std::dec << ">" << std::endl;
 			}
