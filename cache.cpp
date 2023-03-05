@@ -208,15 +208,10 @@ bool Cache::resetCache()
 		//Cycle through lines in set
 		for (int lineIndex = 0; lineIndex < numOfWays; lineIndex++)
 		{
-			cacheLinePtr_t linePtr = new cacheLine_t; //(cacheLinePtr_t)malloc(sizeof(cacheLine_t));
-
-			linePtr->MESI = INVALID;
-			linePtr->LRU = LRU_INIT_STATE;
-			linePtr->tag = 0;
-			linePtr->set = setIndex;
-			linePtr->isCold = true;
-
-			cacheSets[setIndex][lineIndex] = linePtr;
+			cacheSets[setIndex][lineIndex]->MESI = INVALID;
+			cacheSets[setIndex][lineIndex]->LRU = LRU_INIT_STATE;
+			cacheSets[setIndex][lineIndex]->tag = 0;
+			cacheSets[setIndex][lineIndex]->isCold = true;
 		}
 	}
 	return true;
