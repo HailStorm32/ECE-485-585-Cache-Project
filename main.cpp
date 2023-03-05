@@ -19,6 +19,9 @@ struct cacheStats
 	uint16_t reads;
 } dataL1Stats, instL1Stats;
 
+enum modes {NOTHING, COMS, DEBUG};
+int mode = DEBUG;
+
 //Function definintons
 uint32_t revAddrParser(uint32_t tag, uint32_t setID);
 void addrParser(uint32_t address, uint16_t* tag, uint16_t* setID);
@@ -33,7 +36,6 @@ int main(int argc, char *argv[])
 	uint16_t tag = 0;
 	uint16_t setID = 0;
 
-	int mode = 0;
 	std::string filename = "test.txt";
 	if(argc > 1){
 		mode = atoi(argv[1]);
@@ -56,42 +58,70 @@ int main(int argc, char *argv[])
 		switch (command)
 		{
 		case 0:
-			std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
+			if (mode >= DEBUG)
+			{
+				std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
+			}
 
 			//Read from Data L1 cache
 			command0(address_hex, &dataL1, tag, setID);
 			break;
 		case 1:
-			std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
+			if (mode >= DEBUG)
+			{
+				std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
+			}
 
 			//Write to Data L1 cache
 			command1(address_hex, &dataL1, tag, setID);
 			break;
 		case 2:
-			std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
+			if (mode >= DEBUG)
+			{
+				std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
+			}
 			break;
 		case 3:
-			std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
+			if (mode >= DEBUG)
+			{
+				std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
+			}
 			break;
 		case 4:
-			std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
+			if (mode >= DEBUG)
+			{
+				std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
+			}
 			break;
 		case 8:
-			std::cout << "Reset Cache" << std::endl;
+			if (mode >= DEBUG)
+			{
+				std::cout << "Reset Cache" << std::endl;
+			}
 			if(dataL1.resetCache()){
-				std::cout << "Data Cache Reset Complete" << std::endl;
+				if (mode >= DEBUG)
+				{
+					std::cout << "Data Cache Reset Complete" << std::endl;
+				}
 			}
 			if(instL1.resetCache()){
-				std::cout << "Instruction Cache Reset Complete" << std::endl;
+				if (mode >= DEBUG)
+				{
+					std::cout << "Instruction Cache Reset Complete" << std::endl;
+				}
 			}
 			break;
 		case 9:
-			std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
+			if (mode >= DEBUG)
+			{
+				std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
+			}
 			break;
 		default:
 			std::cout << "\n\nERROR: Invalid command " << command << "\n\n";
 			break;
 		}
+		//dataL1.testPrintSet(14212);
 	}
 	
 	//Hold terminal open until user exits
@@ -113,7 +143,10 @@ void addrParser(uint32_t address, uint16_t *tag, uint16_t *setID)
 	//Mask bits [19:6] and [5:0] then right shift 20bits to get tag
 	*tag = (address & 0xFFF00000) >> 20;
 
-	std::cout << "Set: " << *setID << " | " << "Tag: " << *tag << std::endl;
+	if (mode >= DEBUG)
+	{
+		std::cout << "Set: " << *setID << " | " << "Tag: " << *tag << std::endl;
+	}
 }
 
 void command0(uint32_t address, Cache *cachePtr, uint16_t tag, uint16_t setID)
@@ -140,11 +173,17 @@ void command0(uint32_t address, Cache *cachePtr, uint16_t tag, uint16_t setID)
 			evictedAddr = revAddrParser(tag, setID);
 
 			//Write evicted line back to L2
-			std::cout << "\nWrite to L2 <" << std::hex << evictedAddr << std::dec << ">" << std::endl;		
+			if (mode >= COMS)
+			{
+				std::cout << "\nWrite to L2 <" << std::hex << evictedAddr << std::dec << ">" << std::endl;
+			}
 		}
 
 		//Retrieve our data form L2
-		std::cout << "\nRead from L2 <" << std::hex << address << std::dec << ">" << std::endl;
+		if (mode >= COMS)
+		{
+			std::cout << "\nRead from L2 <" << std::hex << address << std::dec << ">" << std::endl;
+		}
 
 		//Write the new tag to L1
 		cacheLine->tag = tag;
@@ -165,7 +204,10 @@ void command0(uint32_t address, Cache *cachePtr, uint16_t tag, uint16_t setID)
 		dataL1Stats.misses += 1;
 
 		//Retrieve from L2
-		std::cout << "\nRead from L2 <" << std::hex << address << std::dec << ">" << std::endl;
+		if (mode >= COMS)
+		{
+			std::cout << "\nRead from L2 <" << std::hex << address << std::dec << ">" << std::endl;
+		}
 
 		//Mark line as exclusive
 		cacheLine->MESI = EXCLUSIVE;
@@ -213,11 +255,17 @@ void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 			evictedAddr = revAddrParser(cacheLine->tag, cacheLine->set);
 
 			//Write evicted line back to L2
-			std::cout << "\nWrite to L2 <" << std::hex << evictedAddr << std::dec << ">" << std::endl;
+			if (mode >= COMS)
+			{
+				std::cout << "\nWrite to L2 <" << std::hex << evictedAddr << std::dec << ">" << std::endl;
+			}
 		}
 
 		//Retrieve our data form L2
-		std::cout << "\nRead for Ownership from L2 <" << std::hex << address << std::dec << ">" << std::endl;
+		if (mode >= COMS)
+		{
+			std::cout << "\nRead for Ownership from L2 <" << std::hex << address << std::dec << ">" << std::endl;
+		}
 
 		//Write the new tag to L1
 		cacheLine->tag = tag;
@@ -225,7 +273,10 @@ void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 		//Preform write though to L2
 		if (cacheLine->isCold)
 		{
-			std::cout << "\nWrite to L2 <" << std::hex << address << std::dec << ">" << std::endl;
+			if (mode >= COMS)
+			{
+				std::cout << "\nWrite to L2 <" << std::hex << address << std::dec << ">" << std::endl;
+			}
 		}
 
 		//Mark line as exclusive
@@ -258,7 +309,10 @@ void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 
 		case INVALID:
 			//Retrieve our data form L2
-			std::cout << "\nRead for Ownership from L2 <" << std::hex << address << std::dec << ">" << std::endl;
+			if (mode >= COMS)
+			{
+				std::cout << "\nRead for Ownership from L2 <" << std::hex << address << std::dec << ">" << std::endl;
+			}
 
 			//Write the new tag to L1
 			cacheLine->tag = tag;
@@ -296,7 +350,10 @@ uint32_t revAddrParser(uint32_t tag, uint32_t setID)
 
 	address = (tag << 20) | (setID << 6) | 0b000000;
 
-	std::cout << "Converted: " << std::hex << address << std::dec << std::endl;
+	if (mode >= DEBUG)
+	{
+		std::cout << "Converted: " << std::hex << address << std::dec << std::endl;
+	}
 
 	return address;
 }
