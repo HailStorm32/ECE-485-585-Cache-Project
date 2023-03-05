@@ -173,6 +173,11 @@ void command0(uint32_t address, Cache *cachePtr, uint16_t tag, uint16_t setID)
 	//Line existed in cache and line state is Exclusive OR Modified OR Shared
 	else
 	{
+		if (cacheLine->MESI == EXCLUSIVE)
+		{
+			cacheLine->MESI = SHARED;
+		}
+
 		//Log a hit
 		dataL1Stats.hits += 1;
 	}
