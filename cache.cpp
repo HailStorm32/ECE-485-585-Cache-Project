@@ -102,11 +102,13 @@ MESIbits Cache::returnMESI(uint16_t tag, uint16_t setID)
 */
 bool Cache::updateLRU(cacheLinePtr_t lineAccessed)
 {
+	uint8_t accessedLineLRU = lineAccessed->LRU;
+
 	if (lineAccessed != NULL)
 	{
 		for (int lineIndex = 0; lineIndex < numOfWays; lineIndex++)
 		{
-			if (cacheSets[lineAccessed->set][lineIndex]->LRU <= lineAccessed->LRU && cacheSets[lineAccessed->set][lineIndex]->LRU != lruMaxState)
+			if (cacheSets[lineAccessed->set][lineIndex]->LRU <= accessedLineLRU && cacheSets[lineAccessed->set][lineIndex]->LRU != lruMaxState)
 			{
 				cacheSets[lineAccessed->set][lineIndex]->LRU++;
 			}
@@ -183,7 +185,7 @@ void Cache::testPrintSet(uint16_t setID)
 {
 	for (int lineIndex = 0; lineIndex < numOfWays; lineIndex++)
 	{
-		std::cout << lineIndex << ": MESI: " << cacheSets[setID][lineIndex]->MESI << " | LRU: " << (int)cacheSets[setID][lineIndex]->LRU << " | TAG: " << cacheSets[setID][lineIndex]->tag << " | isCold: " << cacheSets[setID][lineIndex]->isCold << std::endl;
+		std::cout << lineIndex << ": MESI: " << cacheSets[setID][lineIndex]->MESI << " | LRU: " << (int)cacheSets[setID][lineIndex]->LRU << " | TAG: " << std::hex  << cacheSets[setID][lineIndex]->tag << std::dec << " | isCold: " << cacheSets[setID][lineIndex]->isCold << std::endl;
 	}
 	std::cout << std::endl;
 }
