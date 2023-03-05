@@ -27,6 +27,7 @@ uint32_t revAddrParser(uint32_t tag, uint32_t setID);
 void addrParser(uint32_t address, uint16_t* tag, uint16_t* setID);
 void command0(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
 void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
+void command4(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
 
 int main(int argc, char *argv[])
 {	
@@ -92,6 +93,9 @@ int main(int argc, char *argv[])
 			{
 				std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
 			}
+
+			//Write to Data L1 cache
+			command4(address_hex, &dataL1, tag, setID);
 			break;
 		case 8:
 			if (mode >= DEBUG)
@@ -342,6 +346,33 @@ void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 
 	//Log a write
 	dataL1Stats.writes += 1;
+}
+
+void command4(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
+{
+	//Get line
+	cacheLinePtr_t cacheLine = cachePtr->returnLine(tag, setID);
+
+	//If the line isnt in the cache
+	if (cacheLine == NULL || cacheLine->MESI != MODIFIED)
+	{
+		//Do nothing, we have nothing to invalidate
+		return;
+	}
+	else
+	{
+		//Return modified line to L2
+		if (mode >= COMMS)
+		{
+			std::cout << "\nReturn data to L2  <" << std::hex << address << std::dec << ">" << std::endl;
+		}
+
+		//Mark line as Shared
+		cacheLine->MESI = SHARED;
+
+		//Update LRU bits
+		cachePtr->updateLRU(cacheLine);
+	}
 }
 
 uint32_t revAddrParser(uint32_t tag, uint32_t setID)
