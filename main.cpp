@@ -19,7 +19,7 @@ struct cacheStats
 	uint16_t reads;
 } dataL1Stats, instL1Stats;
 
-enum modes {NOTHING, COMMS, DEBUG};
+enum modes {STATS_ONLY, COMMS, DEBUG};
 int mode = DEBUG;
 
 //Function definintons
@@ -125,11 +125,47 @@ int main(int argc, char *argv[])
 			std::cout << "\n\nERROR: Invalid command " << command << "\n\n";
 			break;
 		}
-		dataL1.testPrintSet(14212);
+		//dataL1.testPrintSet(14212);
+	}
+
+	//Print the stats
+	if (mode >= STATS_ONLY)
+	{
+		
+		if (dataL1Stats.hits == 0 && dataL1Stats.misses == 0)
+		{
+			std::cout << "\n\nData Cache Not Used! No Stats:" << std::endl;
+		}
+		else
+		{
+			std::cout << "\n\nData Cache Stats:" << std::endl;
+			std::cout << "Number of reads: " << dataL1Stats.reads << std::endl;
+			std::cout << "Number of writes: " << dataL1Stats.writes << std::endl;
+			std::cout << "Number of hits: " << dataL1Stats.hits << std::endl;
+			std::cout << "Number of misses: " << dataL1Stats.misses << std::endl;
+			std::cout << "Hit ratio: " << (dataL1Stats.hits / (float)(dataL1Stats.hits + dataL1Stats.misses)) << std::endl;
+		}
+
+
+		if (instL1Stats.hits == 0 && instL1Stats.misses == 0)
+		{
+			std::cout << "\n\nInstruction Cache Not Used! No Stats:" << std::endl;
+		}
+		else
+		{
+			std::cout << "\n\nInstruction Cache Stats:" << std::endl;
+			std::cout << "Number of reads: " << instL1Stats.reads << std::endl;
+			std::cout << "Number of writes: " << instL1Stats.writes << std::endl;
+			std::cout << "Number of hits: " << instL1Stats.hits << std::endl;
+			std::cout << "Number of misses: " << instL1Stats.misses << std::endl;
+			std::cout << "Hit ratio: " << instL1Stats.hits / (float)(instL1Stats.hits + instL1Stats.misses) << std::endl;
+		}
+
+		
 	}
 	
 	//Hold terminal open until user exits
-	std::cout << "Press <Enter> to close..." << std::endl;
+	std::cout << "\n\nPress <Enter> to close..." << std::endl;
 	std::cin.get();
 
 	return 0;
