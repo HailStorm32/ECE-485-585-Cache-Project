@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 				std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
 			}
 
-			//Write to Data L1 cache
+			//Notice a request for data on the bus that is RFO
 			command4(address_hex, &dataL1, tag, setID);
 			break;
 		case 8:
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
 			std::cout << "\n\nERROR: Invalid command " << command << "\n\n";
 			break;
 		}
-		//dataL1.testPrintSet(14212);
+		dataL1.testPrintSet(14212);
 	}
 	
 	//Hold terminal open until user exits
@@ -369,6 +369,9 @@ void command4(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 
 		//Mark line as Shared
 		cacheLine->MESI = SHARED;
+
+		//Mark line as Invalid
+		cacheLine->MESI = INVALID; //Since this is a RFO, pretend the other processor had modified the value
 
 		//Update LRU bits
 		cachePtr->updateLRU(cacheLine);
