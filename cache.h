@@ -36,6 +36,8 @@ public:
 
 	bool resetCache();
 
+	cacheLinePtr_t* returnSet(uint16_t setID);
+
 private:
 
 	void initialize();

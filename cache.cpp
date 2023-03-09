@@ -218,6 +218,11 @@ bool Cache::resetCache()
 	return true;
 }
 
+cacheLinePtr_t* Cache::returnSet(uint16_t setID)
+{
+	return cacheSets[setID];
+}
+
 /*
 * Description: 
 	Initialize the datatypes that make up the cache to inital values
