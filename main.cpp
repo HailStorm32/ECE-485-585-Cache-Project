@@ -30,6 +30,7 @@ uint32_t revAddrParser(uint32_t tag, uint32_t setID);
 void addrParser(uint32_t address, uint16_t* tag, uint16_t* setID);
 void command0(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
 void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
+void command3(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
 void command4(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
 void command9(uint16_t tag, uint16_t setID, uint16_t hits, uint16_t misses, uint16_t reads, uint16_t writes, MESIbits MESI, uint8_t LRUstatus, uint16_t tagBits, uint32_t L2stats, bool isCold);
 
@@ -91,6 +92,10 @@ int main(int argc, char *argv[])
 			{
 				std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
 			}
+
+			//Invalidate line from L2 Cache
+			command3(address_hex, &dataL1, tag, setID);
+
 			break;
 		case 4:
 			if (mode >= DEBUG)
@@ -389,7 +394,31 @@ void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 	//Log a write
 	dataL1Stats.writes += 1;
 }
+void command3(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID){
+	//Get line
+	cacheLinePtr_t cacheLine = cachePtr->returnLine(tag, setID);
 
+	//If the line isnt in the cache
+	if (cacheLine == NULL || cacheLine->isCold == true)
+	{
+		//Do nothing, line not in cache
+		return;
+	}
+	else
+	{
+		//Return modified line to L2
+		if (mode >= COMMS)
+		{
+			std::cout << "\nInvalidate line in L1  <" << std::hex << address << std::dec << ">" << std::endl;
+		}
+
+		//Mark line as Invalid
+		cacheLine->MESI = INVALID; //Since this is a RFO, pretend the other processor had modified the value
+
+		//Update LRU bits
+		cachePtr->updateLRU(cacheLine);
+	}
+}
 void command4(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 {
 	//Get line
