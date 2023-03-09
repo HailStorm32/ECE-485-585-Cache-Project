@@ -433,3 +433,7 @@ FodyWeavers.xsd
 *.sln
 
 *.vcxproj*
+main
+.vscode/launch.json
+.vscode/settings.json
+.vscode/tasks.json
