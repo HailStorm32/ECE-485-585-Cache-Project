@@ -415,7 +415,7 @@ void command3(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID){
 		//Return modified line to L2
 		if (mode >= COMMS)
 		{
-			std::cout << "\nInvalidate line in L1  <" << std::hex << address << std::dec << ">" << std::endl;
+			std::cout << "\nInvalidate line in L1 Data  <" << std::hex << address << std::dec << ">" << std::endl;
 		}
 
 		//Mark line as Invalid
