@@ -437,6 +437,7 @@ void command4(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 	if (cacheLine == NULL || cacheLine->MESI != MODIFIED)
 	{
 		//Do nothing, we have nothing to invalidate
+		dataL1Stats.misses += 1;
 		return;
 	}
 	else
@@ -455,6 +456,8 @@ void command4(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 
 		//Update LRU bits
 		cachePtr->updateLRU(cacheLine);
+
+		dataL1Stats.hits += 1;
 	}
 }
 
