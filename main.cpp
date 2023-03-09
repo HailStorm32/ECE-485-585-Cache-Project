@@ -2,6 +2,7 @@
 #include <string>
 #include <fstream>
 #include "cache.h"
+#include<iomanip>
 
 #define INST_L1_WAYS		4
 #define INST_L1_SETS		16000
@@ -22,12 +23,15 @@ struct cacheStats
 enum modes {STATS_ONLY, COMMS, DEBUG};
 int mode = DEBUG;
 
+std::ostream& os = std::cout;
+
 //Function definintons
 uint32_t revAddrParser(uint32_t tag, uint32_t setID);
 void addrParser(uint32_t address, uint16_t* tag, uint16_t* setID);
 void command0(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
 void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
 void command4(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
+void command9(uint16_t tag, uint16_t setID, uint16_t hits, uint16_t misses, uint16_t reads, uint16_t writes, MESIbits MESI, uint8_t LRUstatus, uint16_t tagBits, uint32_t L2stats, bool isCold);
 
 int main(int argc, char *argv[])
 {	
@@ -120,6 +124,8 @@ int main(int argc, char *argv[])
 			{
 				std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
 			}
+			void command9(uint16_t tag, uint16_t setID, uint16_t hits, uint16_t misses, uint16_t reads, uint16_t writes, MESIbits MESI, uint8_t LRUstatus, uint16_t tagBits, uint32_t L2stats, bool isCold);
+			std::cout << "Current Cache State" << std::endl;
 			break;
 		default:
 			std::cout << "\n\nERROR: Invalid command " << command << "\n\n";
@@ -413,6 +419,28 @@ void command4(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 		cachePtr->updateLRU(cacheLine);
 	}
 }
+
+void command9(uint16_t tag, uint16_t setID, uint16_t hits, uint16_t misses, uint16_t reads, uint16_t writes, MESIbits MESI, uint8_t LRUstatus, uint16_t tagBits, uint32_t L2stats, bool isCold)
+{
+	std::cout << std::left << std::setw(10) << "Tag:" << std::setw(6) << tag << std::endl;
+	std::cout << std::left << std::setw(10) << "Set ID:" << std::setw(6) << setID << std::endl;
+	std::cout << std::left << std::setw(10) << "Hits:" << std::setw(6) << hits << std::endl;
+	std::cout << std::left << std::setw(10) << "Misses:" << std::setw(6) << misses << std::endl;
+	os << std::left << std::setw(10) << "Reads:" << std::setw(6) << reads << std::endl;
+	os << std::left << std::setw(10) << "Writes:" << std::setw(6) << writes << std::endl;
+	os << std::left << std::setw(10) << "MESIbits:" << std::setw(6) << MESI << std::endl;
+	os << std::left << std::setw(10) << "LRU status:" << std::setw(6) << static_cast<unsigned int>(LRUstatus) << std::endl;
+	os << std::left << std::setw(10) << "Tag bits:" << std::setw(6) << tagBits << std::endl;
+	os << std::left << std::setw(10) << "L2 stats:" << std::setw(6) << L2stats << std::endl;
+	os << std::left << std::setw(10) << "Is cold:" << std::setw(6) << std::boolalpha << isCold << std::endl;
+	std::cout << std::endl;
+
+	std::cout << "Press any key once done viewing data..." << std::endl;
+	std::getchar();
+
+}
+
+
 
 uint32_t revAddrParser(uint32_t tag, uint32_t setID)
 {

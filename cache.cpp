@@ -181,7 +181,7 @@ cacheLinePtr_t Cache::getNextAvailLine(uint16_t setID, bool *isOccupiedAndMod)
 	return cacheSets[setID][highestLRUIndex];
 }
 
-void Cache::testPrintSet(uint16_t setID)
+/*void Cache::testPrintSet(uint16_t setID)
 {
 	for (int lineIndex = 0; lineIndex < numOfWays; lineIndex++)
 	{
@@ -189,6 +189,7 @@ void Cache::testPrintSet(uint16_t setID)
 	}
 	std::cout << std::endl;
 }
+*/
 
 /*
 * Description: 
