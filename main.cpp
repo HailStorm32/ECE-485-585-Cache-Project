@@ -401,6 +401,8 @@ void command3(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID){
 	//If the line isnt in the cache
 	if (cacheLine == NULL || cacheLine->isCold == true)
 	{
+		//Log a miss
+		dataL1Stats.misses += 1;
 		//Do nothing, line not in cache
 		return;
 	}
@@ -417,6 +419,9 @@ void command3(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID){
 
 		//Update LRU bits
 		cachePtr->updateLRU(cacheLine);
+
+		//Log a hit
+		dataL1Stats.hits += 1;
 	}
 }
 void command4(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
