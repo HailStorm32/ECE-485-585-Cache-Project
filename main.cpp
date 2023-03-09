@@ -33,6 +33,7 @@ void command0(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
 void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
 void command4(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
 void command9(Cache* l1datacache, Cache* l1instrcache);
+void command2(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
 
 int main(int argc, char *argv[])
 {	
@@ -85,6 +86,7 @@ int main(int argc, char *argv[])
 			if (mode >= DEBUG)
 			{
 				std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
+				command2(address_hex, &dataL1, tag, setID);	//call function
 			}
 			break;
 		case 3:
@@ -488,3 +490,57 @@ uint32_t revAddrParser(uint32_t tag, uint32_t setID)
 
 	return address;
 }
+
+/*void command2(uint32_t address, Cache *cachePtr, uint16_t tag, uint16_t setID)
+
+{
+
+	bool isOccupiedAndModified = false;
+	uint32_t evictedAddr = 0;
+
+	//Get the line
+	cacheLinePtr_t cacheLine = cachePtr->returnLine(tag, setID);
+	
+	if (cacheLine == NULL) //empty
+	{	
+		
+		cacheLine->tag = tag;
+			
+		//Log a miss its empty
+		dataL1Stats.misses += 1;
+
+		//Mark line as exclusive
+		cacheLine->MESI = EXCLUSIVE;
+		
+		//Update LRU bits
+		cachePtr->updateLRU(cacheLine);
+	
+	//Retrieve our data form L2
+			if (mode >= COMMS)
+		{
+			std::cout << "\nRead from L2 <" << std::hex << address << std::dec << ">" << std::endl;
+		}
+	
+		//Line existed in cache and line state is Exclusive OR Modified OR Shared
+	else
+	{
+		if (cacheLine->MESI == EXCLUSIVE)
+		{
+			cacheLine->MESI = SHARED;
+		}
+
+		//Log a hit
+		dataL1Stats.hits += 1;
+	}
+	
+	//for every instruction
+
+	cachePtr->updateLRU(cacheLine);		//Update LRU bits
+	dataL1Stats.reads += 1; 	//Log a read
+	
+	
+	
+	
+}*/
+
+
