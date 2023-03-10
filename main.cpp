@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
 			{
 				std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
 			}
-			std::cout << "Current Cache State" << std::endl;
+			
 			command9(&dataL1, &instL1);
 			
 			break;
@@ -465,9 +465,13 @@ void command9(Cache* l1datacache, Cache* l1instrcache)
 {
 	cacheLinePtr_t* cacheSet = NULL;
 	bool hasPrinted; 
-	int w = 3;
+	int w = 8, z = 14, a = 1, b = 10;
+
 	//cacheSet = l1instrcache->returnSet(setID);
-	
+	std::cout << "\n";
+	std::cout << "\n";
+	std::cout << "Current Data Cache Status:" << std::endl;
+	std::cout << "-----------------------------------------" << std::endl;
 	for (int setIndex = 0; setIndex < DATA_L1_SETS; setIndex++)
 	{	
 		cacheSet = l1datacache->returnSet(setIndex);
@@ -475,20 +479,33 @@ void command9(Cache* l1datacache, Cache* l1instrcache)
 		//Cycle through lines in set
 		for (int lineIndex = 0; lineIndex < DATA_L1_WAYS; lineIndex++)
 		{
+			
 			if (cacheSet[lineIndex]->MESI != INVALID) {
 				if (!hasPrinted) {
-					std::cout << "\nSet: " << setIndex << std::endl;
+					std::cout << "----------" << std::endl;
+					std::cout << "Set: " << setIndex << "|" << std::endl;
+					std::cout << "----------" << std::endl;
 					hasPrinted = true;
 
 				}
-				std::cout << "Way: " << lineIndex << std::endl;
-				std::cout << std::left << "Tag: 0x" << std::setw(w) << std::hex << cacheSet[lineIndex]->tag << std::dec << " | ";
-				std::cout << std::left << std::setw(w) << "MESI Status: " << std::setw(w) << cacheSet[lineIndex]->MESI << " | "; //need to add more to print out the current MESI state as a string
-				std::cout << std::left << std::setw(w) << "LRU bits: " << std::setw(w) << std::bitset<3>(cacheSet[lineIndex]->LRU) << std::dec << std::endl;
-				std::cout << "\n";
+				std::cout << "-----------------------------------------" << std::endl;
+				std::cout << std::left << std::setw(w) << "Way: " << std::left << std::setw(w) << "Tag: " <<
+					std::left << std::setw(w) << "MESI Status: " << std::left << std::setw(w) << "LRU bits: " << std::endl;
+
+				std::cout << std::left << std::setw(w) << lineIndex;
+				std::cout << std::left << std::setw(a) <<"0x" << std::hex << cacheSet[lineIndex]->tag << std::dec;
+				std::cout << std::right << std::setw(z) << cacheSet[lineIndex]->MESI; //need to add more to print out the current MESI state as a string
+				std::cout << std::right << std::setw(b) << std::bitset<3>(cacheSet[lineIndex]->LRU) << std::dec << std::endl;
+				//std::cout << "\n";
 			}
+			
 		}
 	}
+
+	std::cout << "\n";
+	std::cout << "\n";
+	std::cout << "Current Instruction Cache Status:" << std::endl;
+	std::cout << "-----------------------------------------" << std::endl;
 	for (int setIndex = 0; setIndex < INST_L1_SETS; setIndex++)
 	{
 		cacheSet = l1instrcache->returnSet(setIndex);
@@ -498,18 +515,26 @@ void command9(Cache* l1datacache, Cache* l1instrcache)
 		{
 			if (cacheSet[lineIndex]->MESI != INVALID) {
 				if (!hasPrinted) {
-					std::cout << "\nSet: " << setIndex << std::endl;
+					std::cout << "----------" << std::endl;
+					std::cout << "Set: " << setIndex << "|" << std::endl;
+					std::cout << "----------" << std::endl;
 					hasPrinted = true;
 
 				}
-				std::cout << "Way: " << lineIndex << std::endl;
-				std::cout << std::left << "Tag: 0x" << std::setw(w) << std::hex << cacheSet[lineIndex]->tag << std::dec << " | ";
-				std::cout << std::left << std::setw(w) << "MESI Status: " << std::setw(w) << cacheSet[lineIndex]->MESI << " | "; //need to add more to print out the current MESI state as a string
-				std::cout << std::left << std::setw(w) << "LRU bits: " << std::setw(w) << std::bitset<3>(cacheSet[lineIndex]->LRU) << std::dec << std::endl;
-				std::cout << "\n";
+				std::cout << "-----------------------------------------" << std::endl;
+				std::cout << std::left << std::setw(w) << "Way: " << std::left << std::setw(w) << "Tag: " <<
+					std::left << std::setw(w) << "MESI Status: " << std::left << std::setw(w) << "LRU bits: " << std::endl;
+
+				std::cout << std::left << std::setw(w) << lineIndex;
+				std::cout << std::left << std::setw(a) << "0x" << std::hex << cacheSet[lineIndex]->tag << std::dec;
+				std::cout << std::right << std::setw(z) << cacheSet[lineIndex]->MESI; //need to add more to print out the current MESI state as a string
+				std::cout << std::right << std::setw(b) << std::bitset<3>(cacheSet[lineIndex]->LRU) << std::dec << std::endl;
+				
 			}
 		}
 	}
+	std::cout << "\n";
+	std::cout << "\n";
 }
 
 
