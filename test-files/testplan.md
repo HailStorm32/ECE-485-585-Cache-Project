@@ -16,11 +16,12 @@ Result: Log Miss
 1. Read line [0 2903874]
 2. Log Miss
 ## Case 4
-Goal: Instruction Read request, line is in L1
+Goal: Instruction Read request, repeat
 Result: Log Hit
-1. Write to line [1 2903874]
-2. Read line [2 2903874]
-3. Log Hit
+1. Read instruction line [2 2903874]
+2. Log Miss
+3. Read instruction line [2 2903874]
+4. Log Hit
 ## Case 5
 Goal: Instruction Read request, line is not in L1
 Result: Log Miss
