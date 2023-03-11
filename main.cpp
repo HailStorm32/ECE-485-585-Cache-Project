@@ -31,10 +31,11 @@ uint32_t revAddrParser(uint32_t tag, uint32_t setID);
 void addrParser(uint32_t address, uint16_t* tag, uint16_t* setID);
 void command0(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
 void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
+void command2(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
 void command3(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
 void command4(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
 void command9(Cache* l1datacache, Cache* l1instrcache);
-void command2(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID);
+
 
 int main(int argc, char *argv[])
 {	
@@ -132,7 +133,7 @@ int main(int argc, char *argv[])
 			{
 				std::cout << command << " " << std::hex << address_hex << std::dec << std::endl;
 			}
-			std::cout << "Current Cache State" << std::endl;
+			
 			command9(&dataL1, &instL1);
 			
 			break;
@@ -285,7 +286,6 @@ void command0(uint32_t address, Cache *cachePtr, uint16_t tag, uint16_t setID)
 	//Log a read
 	dataL1Stats.reads += 1;
 }
-
 void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 {
 	bool isOccupiedAndModified = false;
@@ -398,6 +398,50 @@ void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 	//Log a write
 	dataL1Stats.writes += 1;
 }
+void command2(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
+{
+	bool isOccupiedAndModified = false;
+
+	//Get the line
+	cacheLinePtr_t cacheLine = cachePtr->returnLine(tag, setID);
+
+	if (cacheLine == NULL) //empty
+	{
+		//Find the next availble line
+		cacheLine = cachePtr->getNextAvailLine(setID, &isOccupiedAndModified);
+
+		cacheLine->tag = tag;
+
+		//Log a miss its empty
+		instL1Stats.misses += 1;
+
+		//Mark line as exclusive
+		cacheLine->MESI = EXCLUSIVE;
+
+		//Retrieve our data form L2
+		if (mode >= COMMS)
+		{
+			std::cout << "\nRead from L2 <" << std::hex << address << std::dec << ">" << std::endl;
+		}
+
+		//Line existed in cache and line state is Exclusive OR Modified OR Shared
+	}
+	else
+	{
+		/*if (cacheLine->MESI == EXCLUSIVE)
+		{
+			cacheLine->MESI = SHARED;
+		}*/
+
+		//Log a hit
+		instL1Stats.hits += 1;
+	}
+
+	//for every instruction
+	cachePtr->updateLRU(cacheLine);		//Update LRU bits
+	instL1Stats.reads += 1; 	//Log a read
+
+}
 void command3(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID){
 	//Get line
 	cacheLinePtr_t cacheLine = cachePtr->returnLine(tag, setID);
@@ -460,14 +504,18 @@ void command4(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 		dataL1Stats.hits += 1;
 	}
 }
-
+//Insert Command 8 function here
 void command9(Cache* l1datacache, Cache* l1instrcache)
 {
 	cacheLinePtr_t* cacheSet = NULL;
 	bool hasPrinted; 
-	int w = 3;
+	int w = 8, z = 14, a = 1, b = 10;
+
 	//cacheSet = l1instrcache->returnSet(setID);
-	
+	std::cout << "\n";
+	std::cout << "\n";
+	std::cout << "Current Data Cache Status:" << std::endl;
+	std::cout << "-----------------------------------------" << std::endl;
 	for (int setIndex = 0; setIndex < DATA_L1_SETS; setIndex++)
 	{	
 		cacheSet = l1datacache->returnSet(setIndex);
@@ -475,20 +523,57 @@ void command9(Cache* l1datacache, Cache* l1instrcache)
 		//Cycle through lines in set
 		for (int lineIndex = 0; lineIndex < DATA_L1_WAYS; lineIndex++)
 		{
+			
 			if (cacheSet[lineIndex]->MESI != INVALID) {
 				if (!hasPrinted) {
-					std::cout << "\nSet: " << setIndex << std::endl;
+					std::cout << "----------" << std::endl;
+					std::cout << "Set: " << setIndex << "|" << std::endl;
+					std::cout << "----------" << std::endl;
 					hasPrinted = true;
 
 				}
-				std::cout << "Way: " << lineIndex << std::endl;
-				std::cout << std::left << "Tag: 0x" << std::setw(w) << std::hex << cacheSet[lineIndex]->tag << std::dec << " | ";
-				std::cout << std::left << std::setw(w) << "MESI Status: " << std::setw(w) << cacheSet[lineIndex]->MESI << " | "; //need to add more to print out the current MESI state as a string
-				std::cout << std::left << std::setw(w) << "LRU bits: " << std::setw(w) << std::bitset<3>(cacheSet[lineIndex]->LRU) << std::dec << std::endl;
-				std::cout << "\n";
+				std::cout << "-----------------------------------------" << std::endl;
+				std::cout << std::left << std::setw(w) << "Way: " << std::left << std::setw(w) << "Tag: " <<
+					std::left << std::setw(w) << "MESI Status: " << std::left << std::setw(w) << "LRU bits: " << std::endl;
+
+				std::cout << std::left << std::setw(w) << lineIndex;
+				std::cout << std::left << std::setw(a) <<"0x" << std::hex << cacheSet[lineIndex]->tag << std::dec;
+				switch (cacheSet[lineIndex]->MESI) {
+				case MODIFIED:
+					std::cout << std::right << std::setw(z) << "MODIFIED";
+					break;
+				case EXCLUSIVE:
+					std::cout << std::right << std::setw(z) << "EXCLUSIVE";
+					break;
+				case SHARED:
+					std::cout << std::right << std::setw(z) << "SHARED";
+					break;
+				case INVALID:
+					std::cout << std::right << std::setw(z) << "INVALID";
+					break;
+				default:
+					std::cout << std::right << std::setw(z) << "ERROR";
+
+				}
+				//std::cout << std::right << std::setw(z) << cacheSet[lineIndex]->MESI; //need to add more to print out the current MESI state as a string
+				std::cout << std::right << std::setw(b) << std::bitset<3>(cacheSet[lineIndex]->LRU) << std::dec << std::endl;
+				//std::cout << "\n";
 			}
 		}
+			
 	}
+
+
+if (instL1Stats.hits == 0 && instL1Stats.misses == 0) {
+	
+	std::cout << "\nInstruction Cache Not Used! Nothing to Print!\n" << std::endl;
+
+}
+else {
+	std::cout << "\n";
+	std::cout << "\n";
+	std::cout << "Current Instruction Cache Status:" << std::endl;
+	std::cout << "-----------------------------------------" << std::endl;
 	for (int setIndex = 0; setIndex < INST_L1_SETS; setIndex++)
 	{
 		cacheSet = l1instrcache->returnSet(setIndex);
@@ -498,19 +583,48 @@ void command9(Cache* l1datacache, Cache* l1instrcache)
 		{
 			if (cacheSet[lineIndex]->MESI != INVALID) {
 				if (!hasPrinted) {
-					std::cout << "\nSet: " << setIndex << std::endl;
+					std::cout << "----------" << std::endl;
+					std::cout << "Set: " << setIndex << "|" << std::endl;
+					std::cout << "----------" << std::endl;
 					hasPrinted = true;
 
 				}
-				std::cout << "Way: " << lineIndex << std::endl;
-				std::cout << std::left << "Tag: 0x" << std::setw(w) << std::hex << cacheSet[lineIndex]->tag << std::dec << " | ";
-				std::cout << std::left << std::setw(w) << "MESI Status: " << std::setw(w) << cacheSet[lineIndex]->MESI << " | "; //need to add more to print out the current MESI state as a string
-				std::cout << std::left << std::setw(w) << "LRU bits: " << std::setw(w) << std::bitset<3>(cacheSet[lineIndex]->LRU) << std::dec << std::endl;
-				std::cout << "\n";
+				std::cout << "-----------------------------------------" << std::endl;
+				std::cout << std::left << std::setw(w) << "Way: " << std::left << std::setw(w) << "Tag: " <<
+					std::left << std::setw(w) << "MESI Status: " << std::left << std::setw(w) << "LRU bits: " << std::endl;
+
+				std::cout << std::left << std::setw(w) << lineIndex;
+				std::cout << std::left << std::setw(a) << "0x" << std::hex << cacheSet[lineIndex]->tag << std::dec;
+				switch (cacheSet[lineIndex]->MESI) {
+				case MODIFIED:
+					std::cout << std::right << std::setw(z) << "MODIFIED";
+					break;
+				case EXCLUSIVE:
+					std::cout << std::right << std::setw(z) << "EXCLUSIVE";
+					break;
+				case SHARED:
+					std::cout << std::right << std::setw(z) << "SHARED";
+					break;
+				case INVALID:
+					std::cout << std::right << std::setw(z) << "INVALID";
+					break;
+				default:
+					std::cout << std::right << std::setw(z) << "ERROR";
+
+				}
+				//std::cout << std::right << std::setw(z) << cacheSet[lineIndex]->MESI; //need to add more to print out the current MESI state as a string
+				std::cout << std::right << std::setw(b) << std::bitset<3>(cacheSet[lineIndex]->LRU) << std::dec << std::endl;
+
 			}
+
 		}
+
+	}
+	std::cout << "\n";
+	std::cout << "\n";
 	}
 }
+
 
 
 
@@ -528,49 +642,6 @@ uint32_t revAddrParser(uint32_t tag, uint32_t setID)
 	return address;
 }
 
-void command2(uint32_t address, Cache *cachePtr, uint16_t tag, uint16_t setID)
-{
-	bool isOccupiedAndModified = false;
 
-	//Get the line
-	cacheLinePtr_t cacheLine = cachePtr->returnLine(tag, setID);
-	
-	if (cacheLine == NULL) //empty
-	{
-		//Find the next availble line
-		cacheLine = cachePtr->getNextAvailLine(setID, &isOccupiedAndModified);
-
-		cacheLine->tag = tag;
-
-		//Log a miss its empty
-		instL1Stats.misses += 1;
-
-		//Mark line as exclusive
-		cacheLine->MESI = EXCLUSIVE;
-
-		//Retrieve our data form L2
-		if (mode >= COMMS)
-		{
-			std::cout << "\nRead from L2 <" << std::hex << address << std::dec << ">" << std::endl;
-		}
-
-		//Line existed in cache and line state is Exclusive OR Modified OR Shared
-	}
-	else
-	{
-		/*if (cacheLine->MESI == EXCLUSIVE)
-		{
-			cacheLine->MESI = SHARED;
-		}*/
-
-		//Log a hit
-		instL1Stats.hits += 1;
-	}
-	
-	//for every instruction
-	cachePtr->updateLRU(cacheLine);		//Update LRU bits
-	instL1Stats.reads += 1; 	//Log a read
-	
-}
 
 
