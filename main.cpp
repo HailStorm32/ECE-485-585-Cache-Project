@@ -562,10 +562,11 @@ void command9(Cache* l1datacache, Cache* l1instrcache)
 		}
 			
 	}
-}
+
 
 if (instL1Stats.hits == 0 && instL1Stats.misses == 0) {
-	std::cout << "Instruction Cache Not Used! No Stats!" << std::endl;
+	
+	std::cout << "\nInstruction Cache Not Used! Nothing to Print!\n" << std::endl;
 
 }
 else {
@@ -621,7 +622,9 @@ else {
 	}
 	std::cout << "\n";
 	std::cout << "\n";
+	}
 }
+
 
 
 
