@@ -116,12 +116,22 @@ int main(int argc, char *argv[])
 				std::cout << "Reset Cache" << std::endl;
 			}
 			if(dataL1.resetCache()){
+				dataL1Stats.hits = 0;
+				dataL1Stats.misses = 0;
+				dataL1Stats.reads = 0;
+				dataL1Stats.writes = 0;
+
 				if (mode >= DEBUG)
 				{
 					std::cout << "Data Cache Reset Complete" << std::endl;
 				}
 			}
 			if(instL1.resetCache()){
+				instL1Stats.hits = 0;
+				instL1Stats.misses = 0;
+				instL1Stats.reads = 0;
+				instL1Stats.writes = 0;
+
 				if (mode >= DEBUG)
 				{
 					std::cout << "Instruction Cache Reset Complete" << std::endl;
@@ -508,7 +518,7 @@ void command4(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 void command9(Cache* l1datacache, Cache* l1instrcache)
 {
 	cacheLinePtr_t* cacheSet = NULL;
-	bool hasPrinted; 
+	bool hasPrinted;
 	int w = 8, z = 14, a = 1, b = 10;
 
 	//cacheSet = l1instrcache->returnSet(setID);
@@ -517,70 +527,13 @@ void command9(Cache* l1datacache, Cache* l1instrcache)
 	std::cout << "Current Data Cache Status:" << std::endl;
 	std::cout << "-----------------------------------------" << std::endl;
 	for (int setIndex = 0; setIndex < DATA_L1_SETS; setIndex++)
-	{	
+	{
 		cacheSet = l1datacache->returnSet(setIndex);
 		hasPrinted = false;
 		//Cycle through lines in set
 		for (int lineIndex = 0; lineIndex < DATA_L1_WAYS; lineIndex++)
 		{
-			
-			if (cacheSet[lineIndex]->MESI != INVALID) {
-				if (!hasPrinted) {
-					std::cout << "----------" << std::endl;
-					std::cout << "Set: " << setIndex << "|" << std::endl;
-					std::cout << "----------" << std::endl;
-					hasPrinted = true;
 
-				}
-				std::cout << "-----------------------------------------" << std::endl;
-				std::cout << std::left << std::setw(w) << "Way: " << std::left << std::setw(w) << "Tag: " <<
-					std::left << std::setw(w) << "MESI Status: " << std::left << std::setw(w) << "LRU bits: " << std::endl;
-
-				std::cout << std::left << std::setw(w) << lineIndex;
-				std::cout << std::left << std::setw(a) <<"0x" << std::hex << cacheSet[lineIndex]->tag << std::dec;
-				switch (cacheSet[lineIndex]->MESI) {
-				case MODIFIED:
-					std::cout << std::right << std::setw(z) << "MODIFIED";
-					break;
-				case EXCLUSIVE:
-					std::cout << std::right << std::setw(z) << "EXCLUSIVE";
-					break;
-				case SHARED:
-					std::cout << std::right << std::setw(z) << "SHARED";
-					break;
-				case INVALID:
-					std::cout << std::right << std::setw(z) << "INVALID";
-					break;
-				default:
-					std::cout << std::right << std::setw(z) << "ERROR";
-
-				}
-				//std::cout << std::right << std::setw(z) << cacheSet[lineIndex]->MESI; //need to add more to print out the current MESI state as a string
-				std::cout << std::right << std::setw(b) << std::bitset<3>(cacheSet[lineIndex]->LRU) << std::dec << std::endl;
-				//std::cout << "\n";
-			}
-		}
-			
-	}
-
-
-if (instL1Stats.hits == 0 && instL1Stats.misses == 0) {
-	
-	std::cout << "\nInstruction Cache Not Used! Nothing to Print!\n" << std::endl;
-
-}
-else {
-	std::cout << "\n";
-	std::cout << "\n";
-	std::cout << "Current Instruction Cache Status:" << std::endl;
-	std::cout << "-----------------------------------------" << std::endl;
-	for (int setIndex = 0; setIndex < INST_L1_SETS; setIndex++)
-	{
-		cacheSet = l1instrcache->returnSet(setIndex);
-		hasPrinted = false;
-		//Cycle through lines in set
-		for (int lineIndex = 0; lineIndex < INST_L1_WAYS; lineIndex++)
-		{
 			if (cacheSet[lineIndex]->MESI != INVALID) {
 				if (!hasPrinted) {
 					std::cout << "----------" << std::endl;
@@ -614,14 +567,71 @@ else {
 				}
 				//std::cout << std::right << std::setw(z) << cacheSet[lineIndex]->MESI; //need to add more to print out the current MESI state as a string
 				std::cout << std::right << std::setw(b) << std::bitset<3>(cacheSet[lineIndex]->LRU) << std::dec << std::endl;
+				//std::cout << "\n";
+			}
+		}
+
+	}
+
+
+	if (instL1Stats.hits == 0 && instL1Stats.misses == 0) {
+
+		std::cout << "\nInstruction Cache Not Used! Nothing to Print!\n" << std::endl;
+
+	}
+	else {
+		std::cout << "\n";
+		std::cout << "\n";
+		std::cout << "Current Instruction Cache Status:" << std::endl;
+		std::cout << "-----------------------------------------" << std::endl;
+		for (int setIndex = 0; setIndex < INST_L1_SETS; setIndex++)
+		{
+			cacheSet = l1instrcache->returnSet(setIndex);
+			hasPrinted = false;
+			//Cycle through lines in set
+			for (int lineIndex = 0; lineIndex < INST_L1_WAYS; lineIndex++)
+			{
+				if (cacheSet[lineIndex]->MESI != INVALID) {
+					if (!hasPrinted) {
+						std::cout << "----------" << std::endl;
+						std::cout << "Set: " << setIndex << "|" << std::endl;
+						std::cout << "----------" << std::endl;
+						hasPrinted = true;
+
+					}
+					std::cout << "-----------------------------------------" << std::endl;
+					std::cout << std::left << std::setw(w) << "Way: " << std::left << std::setw(w) << "Tag: " <<
+						std::left << std::setw(w) << "MESI Status: " << std::left << std::setw(w) << "LRU bits: " << std::endl;
+
+					std::cout << std::left << std::setw(w) << lineIndex;
+					std::cout << std::left << std::setw(a) << "0x" << std::hex << cacheSet[lineIndex]->tag << std::dec;
+					switch (cacheSet[lineIndex]->MESI) {
+					case MODIFIED:
+						std::cout << std::right << std::setw(z) << "MODIFIED";
+						break;
+					case EXCLUSIVE:
+						std::cout << std::right << std::setw(z) << "EXCLUSIVE";
+						break;
+					case SHARED:
+						std::cout << std::right << std::setw(z) << "SHARED";
+						break;
+					case INVALID:
+						std::cout << std::right << std::setw(z) << "INVALID";
+						break;
+					default:
+						std::cout << std::right << std::setw(z) << "ERROR";
+
+					}
+					//std::cout << std::right << std::setw(z) << cacheSet[lineIndex]->MESI; //need to add more to print out the current MESI state as a string
+					std::cout << std::right << std::setw(b) << std::bitset<3>(cacheSet[lineIndex]->LRU) << std::dec << std::endl;
+
+				}
 
 			}
 
 		}
-
-	}
-	std::cout << "\n";
-	std::cout << "\n";
+		std::cout << "\n";
+		std::cout << "\n";
 	}
 }
 
