@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 	uint16_t tag = 0;
 	uint16_t setID = 0;
 
-	std::string filename = "test.txt";
+	std::string filename = "test.txt"; //test.txt
 	if(argc > 1){
 		mode = atoi(argv[1]);
 		std::cout << "Running in Mode: " << mode << std::endl;
@@ -351,7 +351,7 @@ void command1(uint32_t address, Cache* cachePtr, uint16_t tag, uint16_t setID)
 	{
 		switch (cacheLine->MESI)
 		{
-		case EXCLUSIVE || SHARED:
+		case EXCLUSIVE: case SHARED:
 			//Write the new tag to L1
 			cacheLine->tag = tag;
 
