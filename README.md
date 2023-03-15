@@ -6,6 +6,8 @@
 [Josue Tristan](https://github.com/jtristan123)\
 [Wallace McKenzie](https://github.com/Poly-guru)
 
+NOTE: 
+Useses counter based LRU with 111 being the least recently used line
 
 ## Usage
 ```
